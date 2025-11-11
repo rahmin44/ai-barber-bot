@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Barber Bot — демо для барбершопов</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #02040a;
+      --bg-soft: #050816;
+      --fg: #f9fafb;
+      --muted: #a1a1aa;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56,189,248,0.16);
+      --accent-soft2: rgba(56,189,248,0.06);
+      --border-soft: rgba(148,163,253,0.16);
+      --radius-xl: 22px;
+      --transition-fast: 0.18s ease-out;
+      --transition: 0.32s cubic-bezier(.33,.02,.11,.99);
+      --danger: #fb7185;
+      --success: #22c55e;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, -system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at top, #020817, #02040a 55%, #000 100%);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    /* HERO */
+
+    header {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 34px;
+    }
+
+    @media (min-width: 900px) {
+      header {
+        grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.9fr);
+        align-items: center;
+      }
+    }
+
+    .logo {
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo span {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0, #38bdf8, transparent);
+      border: 1px solid rgba(148,163,253,0.6);
+      box-shadow: 0 0 18px rgba(56,189,248,0.55);
+    }
+
+    .hero-title {
+      font-size: clamp(26px, 5vw, 38px);
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .hero-sub {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 640px;
+      line-height: 1.7;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      padding: 9px 18px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #020817;
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(56,189,248,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 34px rgba(56,189,248,0.4);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--fg);
+      border-color: var(--border-soft);
+    }
+    .btn-outline:hover {
+      background: var(--accent-soft2);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* Hero phone mock */
+
+    .hero-phone-wrap {
+      display: none;
+    }
+    @media (min-width: 900px) {
+      .hero-phone-wrap {
+        display: flex;
+        justify-content: center;
+      }
+    }
+
+    .phone {
+      width: 100%;
+      max-width: 260px;
+      border-radius: 32px;
+      padding: 10px 8px 12px;
+      background: radial-gradient(circle at top, #111827, #020817);
+      border: 1px solid rgba(148,163,253,0.25);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .phone-notch {
+      width: 88px;
+      height: 6px;
+      background: #020817;
+      border-radius: 0 0 14px 14px;
+      margin: 0 auto 4px;
+    }
+
+    .bubble {
+      max-width: 88%;
+      padding: 6px 9px;
+      border-radius: 16px;
+      font-size: 10px;
+      line-height: 1.5;
+      margin-bottom: 4px;
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .bubble.bot {
+      background: rgba(15,23,42,0.98);
+      color: var(--fg);
+      border: 1px solid rgba(148,163,253,0.25);
+    }
+    .bubble.user {
+      background: var(--accent);
+      color: #020817;
+      border-radius: 16px 16px 4px 16px;
+      margin-left: auto;
+    }
+
+    .bot-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 2px;
+    }
+    .bot-btn {
+      padding: 4px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,253,0.3);
+      font-size: 8px;
+      color: var(--accent);
+    }
+
+    .upload-area {
+      margin-top: 4px;
+      padding: 5px 7px;
+      border-radius: 10px;
+      border: 1px dashed rgba(148,163,253,0.25);
+      font-size: 8px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .phone-footer {
+      margin-top: 4px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      font-size: 7px;
+      color: var(--muted);
+    }
+
+    /* Common blocks */
+
+    h2 {
+      font-size: 18px;
+      margin: 26px 0 10px;
+      font-weight: 500;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 4px 0;
+      line-height: 1.7;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(9,9,15,0.98);
+      border: 1px solid rgba(148,163,253,0.32);
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 8px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+    @media (min-width: 860px) {
+      .grid-2 { grid-template-columns: 1.3fr 1.2fr; }
+      .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .card {
+      padding: 14px 14px 12px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      background:
+        radial-gradient(circle at top left, rgba(148,163,253,0.10), transparent),
+        var(--bg-soft);
+      font-size: 13px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 14px 36px rgba(4,7,15,0.9);
+      transition: var(--transition);
+      transform-origin: center top;
+    }
+    .card:hover {
+      box-shadow: 0 18px 40px rgba(8,12,24,0.95);
+      border-color: rgba(148,163,253,0.32);
+      transform: translateY(-3px);
+    }
+
+    ul {
+      padding-left: 18px;
+      margin: 6px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    li { margin: 3px 0; }
+
+    /* GAME */
+
+    .game-wrap { margin-top: 30px; }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    @media (min-width: 720px) {
+      .game-grid { grid-template-columns: repeat(5, minmax(0,1fr)); }
+    }
+
+    .shot {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+      cursor: pointer;
+      background: #020817;
+      transition: var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .shot-img-wrap {
+      width: 100%;
+      aspect-ratio: 3 / 4;   /* одинаковые аккуратные карточки */
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .shot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+    .shot-label {
+      font-size: 10px;
+      color: var(--muted);
+      padding: 5px 7px 6px;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(to top, rgba(0,0,0,0.88), transparent);
+    }
+
+    .shot:hover {
+      border-color: var(--accent);
+      box-shadow: 0 10px 26px rgba(15,23,42,0.7);
+      transform: translateY(-3px);
+    }
+
+    .shot.correct {
+      border-color: var(--success);
+      box-shadow:
+        0 0 0 1px var(--success),
+        0 12px 30px rgba(34,197,94,0.32);
+    }
+
+    .shot.wrong {
+      border-color: var(--danger);
+      box-shadow:
+        0 0 0 1px var(--danger),
+        0 12px 30px rgba(248,113,113,0.24);
+    }
+
+    .game-status {
+      margin-top: 8px;
+      font-size: 13px;
+      min-height: 18px;
+    }
+    .game-status.ok { color: var(--success); }
+    .game-status.err { color: var(--danger); }
+
+    .game-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .reset-btn {
+      margin-top: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border-soft);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .reset-btn:hover {
+      background: var(--accent-soft2);
+      transform: translateY(-1px);
+    }
+
+    /* STATS */
+
+    .stats-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    @media (min-width: 720px) {
+      .stats-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+    .stat {
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top, rgba(56,189,248,0.12), transparent);
+      border: 1px solid rgba(148,163,253,0.18);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .stat strong {
+      display: block;
+      font-size: 18px;
+      color: var(--accent);
+      margin-bottom: 2px;
+    }
+    .stat span {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* TIMELINE / STEPS */
+
+    .steps {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .step {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent);
+      font-size: 10px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    /* FAQ */
+
+    .faq-grid {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    @media (min-width: 720px) {
+      .faq-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    .faq-item strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--fg);
+    }
+
+    /* FOOTER */
+
+    footer {
+      margin-top: 32px;
+      padding-top: 10px;
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(148,163,253,0.16);
+    }
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    footer a:hover { text-decoration: underline; }
+
+    /* Fade-in */
+
+    .fade {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity var(--transition), transform var(--transition);
+    }
+    .fade.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- HERO -->
+    <header class="fade">
+      <div>
+        <div class="logo">
+          <span></span> AI BARBER BOT · ДЛЯ БАРБЕРШОПОВ И СЕТЕЙ
+        </div>
+        <h1 class="hero-title">Клиент видит себя с новой стрижкой до первого среза</h1>
+        <p class="hero-sub">
+          Фирменный Telegram-бот: AI-примерка стрижек, онлайн-запись, режим «зеркала» для мастера
+          и продажа ухода. Без приложений, сразу в Telegram.
+        </p>
+        <div class="btn-row">
+          <a href="#how" class="btn btn-primary">Как это работает</a>
+          <a href="#features" class="btn btn-outline">Что умеет бот</a>
+          <a href="#game" class="btn btn-outline">Интерактив: проверь ИИ</a>
+        </div>
+      </div>
+      <div class="hero-phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="bubble bot">👋 Привет! Я AI-бот вашего барбершопа.</div>
+          <div class="bubble bot">Выберите действие:</div>
+          <div class="bot-buttons">
+            <div class="bot-btn">Примерить стрижку (AI)</div>
+            <div class="bot-btn">Записаться</div>
+            <div class="bot-btn">Магазин ухода</div>
+          </div>
+          <div class="bubble user">Покажи, как на мне будет crop fade</div>
+          <div class="bubble bot">Загрузите селфи спереди 👇</div>
+          <div class="upload-area">
+            <span>Прикрепить фото лица</span><span>📎</span>
+          </div>
+          <div class="bubble bot">
+            Готово ✅ Вот пример образа. Нажмите «Хочу так», чтобы записаться.
+          </div>
+          <div class="phone-footer">
+            «Хочу так» → запись к выбранному мастеру. Всё в Telegram.
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="fade">
+      <div class="pill">Два сценария работы</div>
+      <div class="grid grid-2">
+        <div class="card">
+          <strong>Клиент дома</strong>
+          <ul>
+            <li>Заходит в ваш Telegram-бот по ссылке с Instagram / вывески / визитки.</li>
+            <li>Загружает селфи, выбирает стиль (fade, undercut, классика, длина, борода).</li>
+            <li>ИИ показывает, как стрижка смотрится именно на нём.</li>
+            <li>Кнопка «Хочу так» → запись к вашему мастеру в нужный филиал.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>В кресле с барбером</strong>
+          <ul>
+            <li>Барбер открывает бот на телефоне/планшете как интерактивное «зеркало».</li>
+            <li>Показывает клиенту только те стрижки, которые реально делает салон.</li>
+            <li>Быстро согласуют образ → меньше переделок и недовольства.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="fade">
+      <h2>Что умеет ваш AI-бот</h2>
+      <div class="grid grid-3">
+        <div class="card">
+          <strong>AI-примерка стрижек</strong>
+          <ul>
+            <li>До 3–5 реалистичных вариантов на фото клиента.</li>
+            <li>Без «нереальных» образов — только стили вашего прайса.</li>
+            <li>Работает 24/7, не отвлекает админов и мастеров.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>Онлайн-запись</strong>
+          <ul>
+            <li>Кнопка «Записаться» после понравившегося образа.</li>
+            <li>Интеграция с текущим сервисом или встроенный календарь.</li>
+            <li>Напоминания, чтобы клиенты не забывали про визит.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>«Зеркало» для мастера</strong>
+          <ul>
+            <li>Таблет / телефон на рабочем месте.</li>
+            <li>Барбер и клиент листают реальные варианты.</li>
+            <li>ИИ помогает объяснить результат, а не спорить на словах.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>Магазин ухода (опция)</strong>
+          <ul>
+            <li>Ваши помады, пасты, масла, шампуни внутри бота.</li>
+            <li>Рекомендация под выбранную стрижку и тип волос.</li>
+            <li>Резервирование товара к стрижке.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>Промо и активация</strong>
+          <ul>
+            <li>Сообщения о новых услугах и свободных окнах.</li>
+            <li>Игровые механики и интерактивы, как тест ниже.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>Аналитика (по желанию)</strong>
+          <ul>
+            <li>Какие стили клиенты выбирают чаще.</li>
+            <li>По каким образам чаще записываются.</li>
+            <li>Основа для решений по меню услуг и контенту.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- VALUE STATS -->
+    <section class="fade">
+      <h2>Что получает владелец</h2>
+      <div class="stats-grid">
+        <div class="stat">
+          <strong>+10–25%</strong>
+          <span>потенциальный рост онлайновых записей за счёт того, что клиент видит результат заранее.</span>
+        </div>
+        <div class="stat">
+          <strong>Меньше споров</strong>
+          <span>визуальное согласование стрижки до начала работы снижает риск переделок.</span>
+        </div>
+        <div class="stat">
+          <strong>Выделение бренда</strong>
+          <span>у большинства только запись, у вас — полноценный AI-сервис под вашим логотипом.</span>
+        </div>
+      </div>
+      <p style="font-size:11px;margin-top:6px;color:var(--muted);">
+        Цифры зависят от трафика и сети. Цель бота — не «прикол с нейросетью», а конвертация интереса в реальные визиты.
+      </p>
+    </section>
+
+    <!-- WHY NOT TOY -->
+    <section class="fade">
+      <h2>Почему это не просто «игрушка с ИИ»</h2>
+      <div class="card">
+        <ul>
+          <li>В подбор попадают только стили, которые ваши мастера реально могут повторить.</li>
+          <li>Можно учитывать длину и тип волос, форму головы, стиль клиента.</li>
+          <li>ИИ снимает страх «выйду клоуном», а не продаёт невыполнимые обещания.</li>
+          <li>Вся активность внутри вашего Telegram-бота → клиент идёт стричься к вам.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- STEPS -->
+    <section class="fade">
+      <h2>Как запустить AI-бот под ваш барбершоп</h2>
+      <div class="card">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>Собираем от вас стиль: логотип, цвета, примеры стрижек, список филиалов и мастеров.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>Настраиваем бота: AI-примерку только под ваши реальные услуги, подключаем запись и (по желанию) магазин ухода.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>Запускаем тест на 1–2 недели, собираем обратную связь от админов и мастеров, докручиваем и масштабируем на всю сеть.</div>
+          </div>
+        </div>
+        <p style="font-size:11px;margin-top:6px;color:var(--muted);">
+          Всё работает в Telegram. Никаких отдельных приложений для клиентов.
+        </p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="fade">
+      <h2>Коротко по важным вопросам</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <strong>Фото клиентов в безопасности?</strong>
+          <span>Используем официальные API и можем ограничить хранение. Настройки обсуждаются отдельно.</span>
+        </div>
+        <div class="faq-item">
+          <strong>А если ИИ покажет стрижку, которую мы не делаем?</strong>
+          <span>Модель обучается на ваших стилях и ограничивается вашими примерами. Левых вариантов не даём.</span>
+        </div>
+        <div class="faq-item">
+          <strong>Можно оставить только запись, без ИИ?</strong>
+          <span>Да. Бот модульный: можно включать и выключать функции.</span>
+        </div>
+        <div class="faq-item">
+          <strong>Сколько стоит ИИ?</strong>
+          <span>Оплата идёт за количество генераций. Лимиты можно контролировать, чтобы стоимость была прогнозируемой.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARE -->
+    <section class="fade">
+      <h2>Чем это сильнее обычной онлайн-записи</h2>
+      <div class="card">
+        <ul>
+          <li>Онлайн-запись есть у всех. AI-примерка и «зеркало» есть у единиц.</li>
+          <li>Клиент не просто видит свободное время — он влюбляется в конкретный образ и идёт к вам за ним.</li>
+          <li>Интерактивы (как игра ниже) удерживают внимание и превращают бота в точку входа в ваш бренд.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- GAME -->
+    <section id="game" class="game-wrap fade">
+      <h2>Интерактив: отличи реальную стрижку от AI</h2>
+      <p>
+        Ниже 5 вариантов одной модели. Четыре изображения сгенерированы нейросетью, одно — настоящая работа барбера.
+        Нажмите на тот вариант, который, как вы считаете, настоящий.
+        Такой формат игры можно встроить в ваш бот для вовлечения клиентов.
+      </p>
+
+      <div class="game-grid" id="shotsGrid"></div>
+      <div id="gameStatus" class="game-status"></div>
+      <div class="game-hint">
+        Угадали — увидите зелёное подтверждение. Ошиблись — подсветим реальную стрижку.
+      </div>
+      <button id="resetBtn" class="reset-btn" type="button">Сыграть ещё раз</button>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="fade">
+      <div>Это демо-концепция. Боевой бот собирается под ваш бренд, команду и задачи.</div>
+      <div>По внедрению и вопросам: <a href="https://t.me/rahmin44">@rahmin44 в Telegram</a></div>
+    </footer>
+  </div>
+
+  <script>
+    // Используем новую пачку фото:
+    // photo_2025-11-11_15-38-52.jpg
+    // photo_2025-11-11_15-37-48.jpg
+    // photo_2025-11-11_15-38-11.jpg
+    // photo_2025-11-11_15-38-33.jpg
+    // photo_2025-11-11_15-37-21.jpg  <-- настоящая стрижка
+
+    const SHOTS_SOURCE = [
+      { src: "img/photo_2025-11-11_15-38-52.jpg", label: "Вариант 1", isReal: false },
+      { src: "img/photo_2025-11-11_15-37-48.jpg", label: "Вариант 2", isReal: false },
+      { src: "img/photo_2025-11-11_15-38-11.jpg", label: "Вариант 3", isReal: false },
+      { src: "img/photo_2025-11-11_15-38-33.jpg", label: "Вариант 4", isReal: false },
+      { src: "img/photo_2025-11-11_15-37-21.jpg", label: "Вариант 5", isReal: true } // настоящая
+    ];
+
+    const grid = document.getElementById("shotsGrid");
+    const statusEl = document.getElementById("gameStatus");
+    const resetBtn = document.getElementById("resetBtn");
+    let gameLocked = false;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function renderGame() {
+      gameLocked = false;
+      statusEl.textContent = "";
+      statusEl.className = "game-status";
+      grid.innerHTML = "";
+
+      const shuffled = shuffle([...SHOTS_SOURCE]);
+      shuffled.forEach((shot) => {
+        const card = document.createElement("div");
+        card.className = "shot";
+        card.dataset.isReal = shot.isReal ? "1" : "0";
+
+        const imgWrap = document.createElement("div");
+        imgWrap.className = "shot-img-wrap";
+
+        const img = document.createElement("img");
+        img.src = shot.src;
+        img.alt = shot.label;
+
+        imgWrap.appendChild(img);
+
+        const label = document.createElement("div");
+        label.className = "shot-label";
+        label.textContent = shot.label;
+
+        card.appendChild(imgWrap);
+        card.appendChild(label);
+
+        card.addEventListener("click", () => {
+          if (gameLocked) return;
+          gameLocked = true;
+
+          const isReal = card.dataset.isReal === "1";
+          const all = grid.querySelectorAll(".shot");
+
+          all.forEach((c) => {
+            c.classList.remove("correct", "wrong");
+            if (c.dataset.isReal === "1") {
+              c.classList.add("correct");
+            }
+          });
+
+          if (isReal) {
+            statusEl.textContent = "Вы угадали! Это настоящая работа барбера.";
+            statusEl.className = "game-status ok";
+          } else {
+            statusEl.textContent =
+              "Неверно. Реальная стрижка подсвечена зелёным. Такой интерактив можно встроить в ваш бот.";
+            statusEl.className = "game-status err";
+          }
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    // Fade-in on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.14 });
+
+    document.querySelectorAll('.fade').forEach(el => observer.observe(el));
+
+    resetBtn.addEventListener("click", renderGame);
+    renderGame();
+  </script>
+</body>
+</html>
